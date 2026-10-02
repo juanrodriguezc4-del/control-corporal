@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Control corporal</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f3f7f6;--card:#fff;--ink:#16302f;--mut:#5b7270;--line:#d5e2df;--pri:#0f6b66;--pri-ink:#fff;--acc:#e8a317;--bad:#b3402a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1b1a;--card:#162826;--ink:#e6f1ef;--mut:#9ab5b1;--line:#2a403d;--pri:#3fb5ac;--pri-ink:#062321;--acc:#f0b93a;--bad:#f08a72}}
+:root[data-theme="dark"]{--bg:#0e1b1a;--card:#162826;--ink:#e6f1ef;--mut:#9ab5b1;--line:#2a403d;--pri:#3fb5ac;--pri-ink:#062321;--acc:#f0b93a;--bad:#f08a72}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.9rem;font-weight:800;margin:.2em 0}
+h2{font-size:1.25rem;margin:0 0 .6em}
+h3{font-size:1rem;margin:1em 0 .3em}
+p.sub{color:var(--mut);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+label{display:flex;flex-direction:column;font-size:.85rem;color:var(--mut);gap:4px;flex:1 1 140px}
+input,select,button{font:inherit;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{cursor:pointer;background:var(--pri);color:var(--pri-ink);border:0;font-weight:600}
+button.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.del{background:transparent;color:var(--bad);border:1px solid var(--line)}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+nav{display:flex;gap:6px;overflow-x:auto;margin:10px 0 14px;padding-bottom:4px}
+nav button{background:var(--card);color:var(--ink);border:1px solid var(--line);white-space:nowrap}
+nav button[aria-selected=true]{background:var(--pri);color:var(--pri-ink);border-color:var(--pri)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:12px}
+.stat b{display:block;font-size:1.7rem;font-weight:800;line-height:1.1}
+.stat span{color:var(--mut);font-size:.85rem}
+.stat.big{border-color:var(--pri);border-width:2px}
+.scale{position:relative;height:14px;border-radius:7px;margin:14px 0 4px;background:linear-gradient(90deg,#5aa9e6 0 18.5%,#4cb782 18.5% 25%,#e8a317 25% 30%,#e0702a 30% 40%,#b3402a 40%)}
+.scale i{position:absolute;top:-5px;width:4px;height:24px;background:var(--ink);border-radius:2px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--acc);color:#2a1d00;font-weight:600;font-size:.85rem}
+.note{font-size:.85rem;color:var(--mut)}
+.warn{border-left:4px solid var(--acc);padding:8px 12px;background:var(--bg);font-size:.88rem;margin-top:12px}
+ul{padding-left:20px;margin:.3em 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Control corporal</h1>
+<p class="sub">Registra tus datos y conoce tu estado físico, tu gasto calórico, una rutina y una guía de alimentación. Cada persona tiene su perfil.</p>
+
+<section class="card">
+  <h2>Perfiles</h2>
+  <div class="row">
+    <label>Persona<select id="sel"></select></label>
+    <label>Nuevo perfil<input id="newName" placeholder="Nombre"></label>
+    <button id="add">Crear perfil</button>
+    <button id="rm" class="del">Eliminar perfil</button>
+  </div>
+  <p class="note">Los perfiles se guardan en este navegador y dispositivo.</p>
+</section>
+
+<nav role="tablist" id="tabs"></nav>
+
+<section id="p-datos">
+<div class="card">
+  <h2>Registrar medición</h2>
+  <div class="row">
+    <label>Género<select id="sex"><option value="F">Mujer</option><option value="M">Hombre</option></select></label>
+    <label>Edad (años)<input id="age" type="number" min="14" max="99" inputmode="numeric"></label>
+    <label>Peso (kg)<input id="w" type="number" min="25" max="300" step="0.1" inputmode="decimal"></label>
+    <label>Altura (cm)<input id="h" type="number" min="120" max="230" inputmode="numeric"></label>
+    <label>Actividad física<select id="freq">
+      <option value="0">Ninguna (sedentario)</option>
+      <option value="1">1 a 2 veces por semana</option>
+      <option value="2">3 a 4 veces por semana</option>
+      <option value="3">5 a 6 veces por semana</option>
+      <option value="4">Todos los días</option></select></label>
+    <button id="save">Guardar y calcular</button>
+  </div>
+  <p id="msg" class="note"></p>
+</div>
+<div class="card"><h2>Historial</h2><div id="hist" class="tw"></div></div>
+</section>
+
+<section id="p-estado" class="hide"></section>
+<section id="p-rutina" class="hide"></section>
+<section id="p-dieta" class="hide"></section>
+
+<section id="p-ref" class="hide">
+ <div class="card">
+  <h2>Clasificación del IMC (OMS)</h2>
+  <div class="tw"><table><tr><th>IMC (kg/m²)</th><th>Clasificación</th></tr>
+  <tr><td>Menos de 18,5</td><td>Bajo peso</td></tr><tr><td>18,5 a 24,9</td><td>Peso normal</td></tr>
+  <tr><td>25 a 29,9</td><td>Sobrepeso</td></tr><tr><td>30 a 34,9</td><td>Obesidad grado I</td></tr>
+  <tr><td>35 a 39,9</td><td>Obesidad grado II</td></tr><tr><td>40 o más</td><td>Obesidad grado III</td></tr></table></div>
+ </div>
+ <div class="card">
+  <h2>Porcentaje de grasa corporal de referencia</h2>
+  <div class="tw"><table><tr><th>Categoría</th><th>Hombres</th><th>Mujeres</th></tr>
+  <tr><td>Grasa esencial</td><td>2 a 5 %</td><td>10 a 13 %</td></tr>
+  <tr><td>Deportista</td><td>6 a 13 %</td><td>14 a 20 %</td></tr>
+  <tr><td>Estado físico bueno</td><td>14 a 17 %</td><td>21 a 24 %</td></tr>
+  <tr><td>Aceptable</td><td>18 a 24 %</td><td>25 a 31 %</td></tr>
+  <tr><td>Obesidad</td><td>25 % o más</td><td>32 % o más</td></tr></table></div>
+  <p class="note">Rangos generales usados en la práctica clínica y deportiva (ACE/ACSM). Son orientativos.</p>
+ </div>
+ <div class="card">
+  <h2>Bioimpedancia</h2>
+  <p>La bioimpedancia mide la composición corporal con una corriente eléctrica muy leve y entrega grasa, músculo y agua con más precisión que una fórmula. Esta app calcula <b>estimaciones</b> con la fórmula de Deurenberg; no reemplazan un estudio de bioimpedancia.</p>
+  <p><a href="https://www.grupogamma.com/procedimiento/estudio-de-composicion-corporal-bioimpedancia" target="_blank" rel="noopener">Estudio de composición corporal por bioimpedancia (Grupo Gamma)</a></p>
+  <p class="note">Antes de un estudio: ayuno de 4 horas, sin ejercicio intenso en las 12 horas previas y buena hidratación.</p>
+ </div>
+ <div class="card"><h2>Fuentes de los cálculos</h2>
+  <p class="note">Dieta, raciones y distribución de energía: Carbajal Azcona, Manual de Nutrición y Dietética, cap. 22 (Universidad Complutense de Madrid). Gasto basal: ecuación de Mifflin-St Jeor. Grasa: Deurenberg (1991).</p></div>
+</section>
+
+<p class="warn">Esta herramienta es educativa y no reemplaza la consulta con un médico o nutricionista. Consulta a un profesional antes de iniciar una dieta o un plan de ejercicio, sobre todo si tienes una enfermedad, tomas medicamentos o estás embarazada.</p>
+</main>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var KEY="control_corporal_v1",S={users:[],cur:null};
+function load(){try{var r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function cur(){return S.users.filter(function(u){return u.id===S.cur})[0]}
+function last(u){return u&&u.records.length?u.records[u.records.length-1]:null}
+var FACT=[1.2,1.375,1.55,1.725,1.9],FREQ=["Ninguna","1 a 2 veces/semana","3 a 4 veces/semana","5 a 6 veces/semana","Todos los días"];
+function f1(x){return (Math.round(x*10)/10).toLocaleString("es-CO")}
+function f0(x){return Math.round(x).toLocaleString("es-CO")}
+
+function calc(r){
+  var m=r.sex==="M",hm=r.h/100,bmi=r.w/(hm*hm);
+  var fat=Math.min(60,Math.max(3,1.2*bmi+0.23*r.age-10.8*(m?1:0)-5.4));
+  var lean=r.w*(1-fat/100),musc=lean*0.5;
+  var bmr=10*r.w+6.25*r.h-5*r.age+(m?5:-161),tdee=bmr*FACT[r.freq];
+  var cls=bmi<18.5?"Bajo peso":bmi<25?"Peso normal":bmi<30?"Sobrepeso":bmi<35?"Obesidad grado I":bmi<40?"Obesidad grado II":"Obesidad grado III";
+  var fc=m?[[6,"Grasa esencial"],[14,"Deportista"],[18,"Estado físico bueno"],[25,"Aceptable"]]:[[14,"Grasa esencial"],[21,"Deportista"],[25,"Estado físico bueno"],[32,"Aceptable"]],fcat="Obesidad";
+  for(var i=0;i<fc.length;i++){if(fat<fc[i][0]){fcat=fc[i][1];break}}
+  var goal=bmi>=25?"perder":bmi<18.5?"ganar":"mantener";
+  var target=goal==="perder"?Math.max(tdee-500,22*r.w):goal==="ganar"?tdee+300:tdee;
+  return{bmi:bmi,fat:fat,fcat:fcat,lean:lean,musc:musc,muscPct:musc/r.w*100,bmr:bmr,tdee:tdee,cls:cls,goal:goal,target:target,
+    wmin:18.5*hm*hm,wmax:24.9*hm*hm,minKcal:22*r.w};
+}
+
+function render(){
+  var s=$("sel");s.innerHTML=S.users.map(function(u){return '<option value="'+u.id+'"'+(u.id===S.cur?" selected":"")+">"+esc(u.name)+"</option>"}).join("");
+  var u=cur(),r=last(u);
+  if(u&&r){$("sex").value=r.sex;$("age").value=r.age;$("w").value=r.w;$("h").value=r.h;$("freq").value=r.freq}
+  hist(u);estado(u);rutina(u);dieta(u);
+}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function empty(){return '<div class="card"><p>Primero registra una medición en la pestaña <b>Mis datos</b>.</p></div>'}
+
+function hist(u){
+  if(!u){$("hist").innerHTML="<p>Crea un perfil para empezar.</p>";return}
+  if(!u.records.length){$("hist").innerHTML="<p>Aún no hay mediciones para "+esc(u.name)+".</p>";return}
+  $("hist").innerHTML="<table><tr><th>Fecha</th><th>Peso</th><th>IMC</th><th>Grasa est.</th><th>Actividad</th></tr>"+
+  u.records.slice().reverse().map(function(r){var c=calc(r);return "<tr><td>"+r.date+"</td><td>"+f1(r.w)+" kg</td><td>"+f1(c.bmi)+"</td><td>"+f1(c.fat)+" %</td><td>"+FREQ[r.freq]+"</td></tr>"}).join("")+"</table>";
+}
+
+function estado(u){
+  var r=last(u),el=$("p-estado");if(!r){el.innerHTML=empty();return}
+  var c=calc(r),pos=Math.min(100,Math.max(0,(c.bmi-15)/(45-15)*100));
+  var d="";if(u.records.length>1){var dw=r.w-u.records[u.records.length-2].w;d=" ("+(dw>0?"+":"")+f1(dw)+" kg desde la medición anterior)"}
+  el.innerHTML='<div class="card"><h2>Estado actual de '+esc(u.name)+'</h2><div class="grid">'+
+  '<div class="stat big"><b>'+f1(c.bmi)+'</b><span>IMC (kg/m²)</span></div>'+
+  '<div class="stat"><b style="font-size:1.2rem">'+c.cls+'</b><span>Clasificación del peso</span></div>'+
+  '<div class="stat"><b>'+f1(r.w)+' kg</b><span>Peso actual'+d+'</span></div>'+
+  '<div class="stat"><b>'+f1(c.fat)+' %</b><span>Grasa corporal est. ('+c.fcat+')</span></div>'+
+  '<div class="stat"><b>'+f1(c.muscPct)+' %</b><span>Músculo est. ('+f1(c.musc)+' kg)</span></div></div>'+
+  '<div class="scale"><i style="left:calc('+pos+'% - 2px)"></i></div><div class="note">Escala de IMC de 15 a 45. Peso saludable para tu altura: '+f1(c.wmin)+' a '+f1(c.wmax)+' kg.</div>'+
+  '<p class="note">Grasa y músculo son estimaciones (fórmula de Deurenberg; músculo ≈ 50 % de la masa magra). Una bioimpedancia es más precisa.</p></div>'+
+  '<div class="card"><h2>Gasto calórico diario</h2><div class="grid">'+
+  '<div class="stat"><b>'+f0(c.bmr)+'</b><span>kcal/día en reposo (metabolismo basal)</span></div>'+
+  '<div class="stat big"><b>'+f0(c.tdee)+'</b><span>kcal/día de mantenimiento ('+FREQ[r.freq]+')</span></div>'+
+  '<div class="stat"><b>'+f0(c.target)+'</b><span>kcal/día para '+c.goal+' peso</span></div></div>'+
+  '<p>Con tu IMC, el objetivo sugerido es <span class="pill">'+c.goal+' peso</span>. '+
+  (c.goal==="perder"?"Un déficit de unas 500 kcal/día permite perder cerca de 0,5 kg por semana. No bajes de "+f0(c.minKcal)+" kcal/día (22 kcal por kg de peso).":c.goal==="ganar"?"Un superávit de unas 300 kcal/día, con ejercicio de fuerza, favorece ganar masa de forma gradual.":"Come cerca de tu mantenimiento y mantente activo.")+'</p></div>';
+}
+
+var FUERZA=["Sentadillas: 3 x 12","Flexiones (apoyando rodillas o en pared si es difícil): 3 x 10","Remo con mancuerna o banda: 3 x 12","Puente de glúteos: 3 x 15","Press de hombros con mancuernas o botellas: 3 x 12","Plancha: 3 x 30 segundos"];
+function rutina(u){
+  var r=last(u),el=$("p-rutina");if(!r){el.innerHTML=empty();return}
+  var c=calc(r),f=+r.freq,hi=c.bmi>=30,
+  ae=hi?"Caminata a buen paso, bicicleta estática o natación (bajo impacto)":"Caminata rápida, trote suave o bicicleta",
+  min=c.bmi>=25?(f<2?40:50):(f<2?30:40),
+  plans=[["A","D","F","D","A","D","D"],["A","D","F","D","A","F","D"],["F","A","F","D","A","F","D"],["F","A","F","A","F","A","M"],["F","A","F","A","F","A","M"]][f],
+  days=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"],
+  txt={A:"<b>Aeróbico, "+min+" min.</b> "+ae+". Ritmo moderado: puedes hablar pero no cantar.",
+   F:"<b>Fuerza, 40 min.</b> Calentamiento 5 min y descanso de 60 s entre series.",
+   M:"<b>Movilidad, 20 a 30 min.</b> Estiramientos suaves y paseo tranquilo.",D:"Descanso."};
+  var n=0,rows=plans.map(function(p,i){var t=txt[p];return "<tr><td>"+days[i]+"</td><td>"+t+"</td></tr>"}).join("");
+  el.innerHTML='<div class="card"><h2>Rutina semanal para '+esc(u.name)+'</h2><p>Actividad actual: '+FREQ[r.freq]+'. La meta es llegar a 30–60 minutos de ejercicio aeróbico moderado la mayoría de los días, y fuerza 2 veces por semana.</p>'+
+  '<div class="tw"><table><tr><th>Día</th><th>Actividad</th></tr>'+rows+'</table></div></div>'+
+  '<div class="card"><h2>Sesión de fuerza (cuerpo completo)</h2><ul>'+FUERZA.map(function(x){return "<li>"+x+"</li>"}).join("")+'</ul>'+
+  '<p class="note">Elige un peso con el que las últimas repeticiones cuesten, pero con buena técnica. Cuando completes todas las series con facilidad, sube un poco la carga.</p></div>'+
+  '<div class="card"><h2>Consejos</h2><ul><li>Sube escaleras en lugar de usar ascensor y camina al menos 30 minutos al día: sustituir 30 minutos de TV por caminar puede significar unos 5 kg menos al año en una persona de 80 kg.</li>'+
+  (hi?'<li>Con un IMC alto, empieza con bajo impacto para cuidar rodillas y espalda y aumenta el tiempo poco a poco.</li>':'')+
+  (f<2?'<li>Vienes de poca actividad: durante 2 semanas haz solo 2 o 3 días y aumenta después.</li>':'')+
+  '<li>Duerme 7 a 9 horas y bebe agua durante el ejercicio.</li></ul></div>';
+}
+
+var RACIONES=[["Lácteos descremados","2 – 3","Leche 200 ml · Yogur 125 g · Queso fresco 30–40 g"],["Carnes magras, pescados, huevos","2","Carne 100–125 g · Pescado 125–150 g · Huevo 1 unidad"],["Cereales y legumbres","6","Pan 30–40 g · Arroz o pasta 60–70 g · Legumbres 60–70 g"],["Frutas","3","Pieza mediana 150–200 g · Zumo 150 ml"],["Verduras y hortalizas","3 – 4","100–200 g"],["Aceites, azúcares y dulces","Con moderación","1 cucharada rasa de aceite (10 g) = 90 kcal"]];
+function dieta(u){
+  var r=last(u),el=$("p-dieta");if(!r){el.innerHTML=empty();return}
+  var c=calc(r),k=c.target,
+  ch=k*0.55/3.75,pr=k*0.15/4,fa=k*0.30/9,
+  meals=[["Desayuno",.20],["Media mañana",.10],["Comida",.40],["Merienda",.10],["Cena",.20]];
+  el.innerHTML='<div class="card"><h2>Dieta orientativa para '+esc(u.name)+': '+f0(k)+' kcal/día</h2>'+
+  (c.goal==="ganar"?'<p>Para ganar peso, aumenta las raciones de cereales, legumbres, lácteos y frutos secos manteniendo la misma distribución.</p>':'')+
+  '<h3>Reparto de nutrientes</h3><div class="grid">'+
+  '<div class="stat"><b>'+f0(ch)+' g</b><span>Hidratos de carbono (55 %)</span></div>'+
+  '<div class="stat"><b>'+f0(pr)+' g</b><span>Proteínas (15 %)</span></div>'+
+  '<div class="stat"><b>'+f0(fa)+' g</b><span>Grasas (30 %)</span></div></div>'+
+  '<h3>Reparto por comidas</h3><div class="tw"><table><tr><th>Comida</th><th>%</th><th>kcal</th></tr>'+
+  meals.map(function(m){return "<tr><td>"+m[0]+"</td><td>"+m[1]*100+" %</td><td>"+f0(k*m[1])+"</td></tr>"}).join("")+'</table></div>'+
+  '<p class="note">Desayuno abundante y cena ligera facilitan el control del peso.</p></div>'+
+  '<div class="card"><h2>Raciones diarias recomendadas</h2><div class="tw"><table><tr><th>Grupo</th><th>Raciones/día</th><th>Tamaño de ración</th></tr>'+
+  RACIONES.map(function(x){return "<tr><td>"+x[0]+"</td><td>"+x[1]+"</td><td>"+x[2]+"</td></tr>"}).join("")+'</table></div>'+
+  '<p class="note">Pesos del alimento tal como se compra. Estas raciones aplican a una dieta hipocalórica; ajusta cantidades a tu objetivo calórico.</p></div>'+
+  '<div class="card"><h2>Recomendaciones</h2><ul>'+
+  '<li>Haz 4 o 5 comidas al día en horarios fijos y no te saltes ninguna.</li>'+
+  '<li>Elige alimentos magros, verduras, frutas, legumbres (2 veces por semana o más) y cereales integrales.</li>'+
+  '<li>Cocina al horno, a la plancha, al vapor o cocido; limita fritos, salsas y embutidos.</li>'+
+  '<li>Bebe agua (unos 2 litros al día) y reduce refrescos y alcohol.</li>'+
+  '<li>Come despacio, sirve el plato en la cocina y usa platos pequeños.</li>'+
+  '<li>Ningún alimento engorda o adelgaza por sí solo: importa el conjunto y la cantidad.</li>'+
+  '<li>No pierdas más de 0,5 a 1 kg por semana. Déficits de más de 1000 kcal/día por mucho tiempo aumentan el riesgo de deficiencias y de efecto rebote.</li></ul>'+
+  '<h3>100 kcal equivalen a</h3><p class="note">1 manzana grande (259 g) · 1 rebanada grande de pan (39 g) · 1 vaso grande de leche descremada (300 ml) · 1 huevo duro (76 g) · 1 cucharada de aceite (11 g) · 1 bombón grande (22 g)</p></div>';
+}
+
+var TABS=[["datos","Mis datos"],["estado","Estado y calorías"],["rutina","Rutina"],["dieta","Dieta"],["ref","Referencias"]];
+function tab(id){TABS.forEach(function(t){$("p-"+t[0]).classList.toggle("hide",t[0]!==id)});
+  var b=$("tabs").children;for(var i=0;i<b.length;i++)b[i].setAttribute("aria-selected",TABS[i][0]===id)}
+$("tabs").innerHTML=TABS.map(function(t){return '<button role="tab" data-t="'+t[0]+'">'+t[1]+"</button>"}).join("");
+$("tabs").onclick=function(e){var t=e.target.getAttribute("data-t");if(t)tab(t)};
+
+$("add").onclick=function(){var n=$("newName").value.trim();if(!n)return;
+  var id="u"+Date.now();S.users.push({id:id,name:n,records:[]});S.cur=id;$("newName").value="";save();render();tab("datos")};
+$("sel").onchange=function(){S.cur=$("sel").value;save();render()};
+$("rm").onclick=function(){var u=cur();if(!u||!confirm("¿Eliminar el perfil de "+u.name+" y todo su historial?"))return;
+  S.users=S.users.filter(function(x){return x.id!==u.id});S.cur=S.users.length?S.users[0].id:null;save();render()};
+$("save").onclick=function(){
+  var u=cur(),m=$("msg");if(!u){m.textContent="Crea un perfil antes de guardar.";return}
+  var r={date:new Date().toISOString().slice(0,10),sex:$("sex").value,age:+$("age").value,w:+$("w").value,h:+$("h").value,freq:+$("freq").value};
+  if(!(r.age>=14&&r.age<=99)||!(r.w>=25&&r.w<=300)||!(r.h>=120&&r.h<=230)){m.textContent="Revisa los datos: edad 14–99 años, peso 25–300 kg y altura 120–230 cm.";return}
+  var l=last(u);if(l&&l.date===r.date)u.records[u.records.length-1]=r;else u.records.push(r);
+  save();m.textContent="";render();tab("estado")};
+
+load();render();tab("datos");
+</script>
+</body>
+</html>
